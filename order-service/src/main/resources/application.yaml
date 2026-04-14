@@ -1,0 +1,24 @@
+# Configuration is loaded from Spring Cloud Config Server
+# See bootstrap.yml for Config Server connection settings
+
+# Actuator configuration for monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+  info:
+    env:
+      enabled: true
+
+# Application info for /actuator/info endpoint
+info:
+  app:
+    name: Order Service
+    description: Microservice d'orchestration des commandes de livraison
+    version: 1.0.0
+  service:
+    port: 8084

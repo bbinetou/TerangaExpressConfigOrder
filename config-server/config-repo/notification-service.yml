@@ -1,0 +1,103 @@
+# Notification Service Configuration
+# Multi-channel notification service
+
+server:
+  port: 8088
+
+spring:
+  application:
+    name: notification-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/notification_db
+    username: notificationuser
+    password: notificationpass
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+  
+  # Kafka Consumer Configuration
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: notification-service-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      auto-offset-reset: earliest
+    properties:
+      spring.json.trusted.packages: "*"
+  
+  # Email Configuration
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${EMAIL_USERNAME:noreply@delivery.com}
+    password: ${EMAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
+# Eureka Client Configuration
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 30
+
+# Notification Channels Configuration
+notification:
+  channels:
+    email:
+      enabled: true
+      from: noreply@delivery.com
+      templates-path: classpath:/templates/email/
+    sms:
+      enabled: true
+      provider: twilio
+      twilio:
+        account-sid: ${TWILIO_ACCOUNT_SID:}
+        auth-token: ${TWILIO_AUTH_TOKEN:}
+        from-number: ${TWILIO_FROM_NUMBER:}
+    push:
+      enabled: true
+      provider: fcm
+      fcm:
+        server-key: ${FCM_SERVER_KEY:}
+        project-id: ${FCM_PROJECT_ID:}
+    in-app:
+      enabled: true
+      retention-days: 30
+
+# Feign Client Configuration
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+        loggerLevel: basic
+      user-service:
+        connectTimeout: 3000
+        readTimeout: 3000
+
+logging:
+  level:
+    sn.edu.ept.notification: DEBUG
+    org.springframework.kafka: INFO
+    org.springframework.mail: DEBUG

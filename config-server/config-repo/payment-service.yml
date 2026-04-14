@@ -1,0 +1,68 @@
+# Payment Service Configuration
+# Payment processing service
+
+server:
+  port: 8086
+
+spring:
+  application:
+    name: payment-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/payment_db
+    username: paymentuser
+    password: paymentpass
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+  
+  # Kafka Configuration
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+    consumer:
+      group-id: payment-service-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      auto-offset-reset: earliest
+    properties:
+      spring.json.trusted.packages: "*"
+
+# Eureka Client Configuration
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 30
+
+# Payment Gateway Configuration
+payment:
+  gateway:
+    stripe:
+      api-key: ${STRIPE_API_KEY:sk_test_dummy}
+      webhook-secret: ${STRIPE_WEBHOOK_SECRET:whsec_dummy}
+    wave:
+      api-key: ${WAVE_API_KEY:wave_test_dummy}
+    orange-money:
+      api-key: ${ORANGE_MONEY_API_KEY:om_test_dummy}
+  processing:
+    timeout-seconds: 30
+    retry-attempts: 3
+
+logging:
+  level:
+    sn.edu.ept.payment: DEBUG
+    org.springframework.kafka: INFO

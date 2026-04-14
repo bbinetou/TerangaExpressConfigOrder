@@ -1,0 +1,43 @@
+# Order Service - Development Profile
+# Profile-specific configuration that overrides both global and service-specific properties
+
+server:
+  port: 8084
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/order_db_dev
+    username: devuser
+    password: devpass
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+  h2:
+    console:
+      enabled: true
+
+# Development-specific logging
+logging:
+  level:
+    root: DEBUG
+    sn.edu.ept.order: TRACE
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.kafka: DEBUG
+
+# Development-specific order processing
+order:
+  processing:
+    timeout: 60000
+    max-retries: 5
+    batch-size: 10
+  validation:
+    enabled: true
+    strict-mode: true
+  debug:
+    enabled: true
+    log-requests: true
+  saga:
+    compensation-enabled: true
+    timeout-seconds: 120

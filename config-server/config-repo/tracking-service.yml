@@ -1,0 +1,70 @@
+# Tracking Service Configuration
+# Real-time tracking service with Redis and WebSocket
+
+server:
+  port: 8085
+
+spring:
+  application:
+    name: tracking-service
+  
+  # Redis Configuration for real-time positions
+  redis:
+    host: localhost
+    port: 6379
+    password: ${REDIS_PASSWORD:}
+    timeout: 2000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+        max-wait: -1ms
+  
+  # Kafka Configuration
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+    consumer:
+      group-id: tracking-service-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      auto-offset-reset: earliest
+    properties:
+      spring.json.trusted.packages: "*"
+
+# Eureka Client Configuration
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 30
+
+# WebSocket Configuration
+websocket:
+  allowed-origins: "*"
+  endpoint: /ws
+  topic-prefix: /topic
+  app-prefix: /app
+
+# Tracking Configuration
+tracking:
+  position:
+    ttl-seconds: 86400
+    update-interval-seconds: 30
+  history:
+    max-entries: 1000
+
+logging:
+  level:
+    sn.edu.ept.tracking: DEBUG
+    org.springframework.kafka: INFO
+    org.springframework.web.socket: DEBUG

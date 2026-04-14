@@ -1,0 +1,55 @@
+# ============================================================================
+# Configuration du Spring Cloud Config Server
+# ============================================================================
+# Ce fichier configure le serveur de configuration centralisé pour les microservices.
+# Le serveur utilise le profil "native" pour lire les configurations depuis le
+# système de fichiers local (répertoire config-repo).
+
+# ----------------------------------------------------------------------------
+# Configuration du serveur HTTP
+# ----------------------------------------------------------------------------
+# Exigence: 2.1 - Le serveur doit écouter sur le port 8888
+server:
+  port: 8888  # Port d'écoute du Config Server (standard pour Spring Cloud Config)
+
+# ----------------------------------------------------------------------------
+# Configuration Spring Boot et Spring Cloud
+# ----------------------------------------------------------------------------
+spring:
+  application:
+    name: config-server  # Nom de l'application pour l'identification
+  
+  # Profils Spring actifs
+  # Exigence: 3.1 - Activation du profil native
+  profiles:
+    active: native  # Profil "native" pour utiliser le système de fichiers local
+                    # Alternative: "git" pour utiliser un dépôt Git distant
+  
+  # Configuration du serveur de configuration Spring Cloud
+  # Exigence: 3.3 - Configuration de l'emplacement de recherche
+  cloud:
+    config:
+      server:
+        native:
+          # Emplacement des fichiers de configuration
+          # Le préfixe "file:" indique un chemin du système de fichiers local
+          # Le chemin "./config-repo" est relatif au répertoire d'exécution
+          search-locations: file:./config-repo
+          
+          # Rôle du profil native:
+          # - Lit les fichiers YAML/properties depuis le système de fichiers
+          # - Permet le développement local sans dépôt Git
+          # - Supporte la structure: application.yml, {service}.yml, {service}-{profile}.yml
+          # - Fusionne automatiquement les configurations (global → service → profile)
+
+# ----------------------------------------------------------------------------
+# Configuration des endpoints de monitoring
+# ----------------------------------------------------------------------------
+# Exigence: 10.1, 10.2, 10.3 - Exposition des endpoints de santé et d'information
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info  # Endpoints exposés pour le monitoring
+                              # - /actuator/health: État de santé du serveur
+                              # - /actuator/info: Informations sur l'application

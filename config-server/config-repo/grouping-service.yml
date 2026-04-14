@@ -1,0 +1,62 @@
+# Grouping Service Configuration
+# Intelligent delivery grouping and route optimization service
+
+server:
+  port: 8087
+
+spring:
+  application:
+    name: grouping-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/grouping_db
+    username: groupinguser
+    password: groupingpass
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+  
+  # Kafka Configuration
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+    consumer:
+      group-id: grouping-service-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      auto-offset-reset: earliest
+    properties:
+      spring.json.trusted.packages: "*"
+
+# Eureka Client Configuration
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 30
+
+# Grouping Algorithm Configuration
+grouping:
+  optimization:
+    algorithm: nearest-neighbor
+    max-group-size: 10
+    max-distance-km: 100
+    time-window-minutes: 60
+
+logging:
+  level:
+    sn.edu.ept.grouping: DEBUG
+    org.springframework.kafka: INFO
