@@ -1,3 +1,12 @@
+spring:
+  application:
+    name: order-service
+  config:
+    import: optional:configserver:http://config-server:8888
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:default}
+
+
 # Configuration is loaded from Spring Cloud Config Server
 # See bootstrap.yml for Config Server connection settings
 
@@ -22,3 +31,5 @@ info:
     version: 1.0.0
   service:
     port: 8084
+
+

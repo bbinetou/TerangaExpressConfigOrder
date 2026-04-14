@@ -2,7 +2,6 @@ package sn.edu.ept.order_service;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
 /**
@@ -18,7 +17,8 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  * Annotations:
  * - @SpringBootApplication: Configuration Spring Boot standard
  * - @EnableFeignClients: Active les clients Feign pour communication REST inter-services
- * - @EnableEurekaClient: Enregistre le service auprès d'Eureka pour découverte dynamique
+ * 
+ * Note: L'enregistrement Eureka est automatique avec spring-cloud-starter-netflix-eureka-client
  * 
  * Port par défaut: 8084
  * 
@@ -27,7 +27,6 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  */
 @SpringBootApplication
 @EnableFeignClients
-@EnableEurekaClient
 public class OrderServiceApplication {
 
 	public static void main(String[] args) {

@@ -1,35 +1,6 @@
-# Système de Livraison Microservices - Guide Complet
+# Système de Livraison Microservices
 
-> 👋 **Nouveau sur le projet?** Commencez par [WELCOME.md](WELCOME.md) pour un accueil complet!
-
-## 📋 Table des Matières
-- [Vue d'ensemble](#vue-densemble)
-- [Architecture](#architecture)
-- [Services Implémentés](#services-implémentés)
-- [Prérequis](#prérequis)
-- [Installation et Configuration](#installation-et-configuration)
-- [Démarrage du Système](#démarrage-du-système)
-- [Tests des Endpoints](#tests-des-endpoints)
-- [Communication Inter-Services](#communication-inter-services)
-- [Monitoring](#monitoring)
-- [Troubleshooting](#troubleshooting)
-
-## 📚 Documentation Complète
-
-Ce README est le guide principal. Pour une navigation complète de toute la documentation:
-
-- **[INDEX.md](INDEX.md)** - Index complet de toute la documentation
-- **[QUICK_START.md](QUICK_START.md)** - Démarrage rapide en 5 minutes
-- **[INSTALLATION_GUIDE.md](INSTALLATION_GUIDE.md)** - Guide d'installation PostgreSQL, Kafka, Zookeeper
-- **[DOCKER_GUIDE.md](DOCKER_GUIDE.md)** - Guide complet Docker et docker-compose
-- **[IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)** - Résumé technique détaillé
-- **[COMMANDS_CHEATSHEET.md](COMMANDS_CHEATSHEET.md)** - Aide-mémoire des commandes
-- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Guide de contribution
-- **[FINAL_SUMMARY.md](FINAL_SUMMARY.md)** - Résumé final du projet
-
----
-
-## 🎯 Vue d'ensemble
+## � Vue d'ensemblee
 
 Système de livraison distribué basé sur une architecture microservices avec Spring Cloud. Le système permet la gestion complète des commandes de livraison, du suivi en temps réel, des paiements et de l'orchestration des chauffeurs.
 
