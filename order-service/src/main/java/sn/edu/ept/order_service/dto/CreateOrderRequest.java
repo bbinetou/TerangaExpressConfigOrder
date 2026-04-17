@@ -2,16 +2,18 @@ package sn.edu.ept.order_service.dto;
 
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateOrderRequest {
-    @NotNull(message = "Client ID is required")
+    // Client ID sera automatiquement rempli depuis @CurrentUser dans le controller
     private Long clientId;
     
     @NotNull(message = "Parcel ID is required")

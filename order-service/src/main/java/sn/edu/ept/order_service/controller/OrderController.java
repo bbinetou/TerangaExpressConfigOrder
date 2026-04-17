@@ -1,6 +1,8 @@
 package sn.edu.ept.order_service.controller;
 
 import sn.edu.ept.order_service.service.OrderService;
+import sn.edu.ept.order_service.config.ConnectedUser;
+import sn.edu.ept.order_service.config.CurrentUser;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -43,12 +45,30 @@ public class OrderController {
     /**
      * Crée une nouvelle commande de livraison.
      * 
-     * @param request les détails de la commande (clientId, parcelId, transportType, totalPrice, scheduledAt)
+     * @param request les détails de la commande (parcelId, transportType, totalPrice, scheduledAt)
+     * @param user l'utilisateur connecté injecté automatiquement depuis le JWT token
      * @return ResponseEntity<OrderResponse> 201 Created avec la commande créée
      */
     @PostMapping
-    public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody CreateOrderRequest request) {
-        OrderResponse response = orderService.createOrder(request);
+    public ResponseEntity<OrderResponse> createOrder(
+            @Valid @RequestBody CreateOrderRequest request,
+            @CurrentUser ConnectedUser user) {
+        
+        // Vérifier que l'utilisateur a le rôle CLIENT
+        if (!"CLIENT".equals(user.getRole())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
+        // Utiliser l'ID de l'utilisateur connecté comme clientId
+        CreateOrderRequest orderWithUser = CreateOrderRequest.builder()
+                .clientId(user.getId())
+                .parcelId(request.getParcelId())
+                .transportType(request.getTransportType())
+                .totalPrice(request.getTotalPrice())
+                .scheduledAt(request.getScheduledAt())
+                .build();
+        
+        OrderResponse response = orderService.createOrder(orderWithUser);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
     
