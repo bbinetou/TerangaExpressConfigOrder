@@ -11,7 +11,7 @@ import sn.edu.ept.order_service.dto.TariffResponse;
  * Feign client for communicating with parcel-service
  * Uses Eureka service discovery to locate parcel-service instances
  */
-@FeignClient(name = "parcel-service")
+@FeignClient(name = "parcel-service", url = "${parcel-service.url:}")
 public interface ParcelServiceClient {
     
     /**

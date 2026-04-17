@@ -9,7 +9,7 @@ import sn.edu.ept.order_service.dto.GroupingResponse;
  * Feign client for communicating with grouping-service
  * Uses Eureka service discovery to locate grouping-service instances
  */
-@FeignClient(name = "grouping-service")
+@FeignClient(name = "grouping-service", url = "${grouping-service.url:}")
 public interface GroupingServiceClient {
     
     /**

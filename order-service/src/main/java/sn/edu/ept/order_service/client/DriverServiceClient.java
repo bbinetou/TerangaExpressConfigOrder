@@ -13,7 +13,7 @@ import sn.edu.ept.order_service.dto.DriverResponse;
  * Feign client for communicating with driver-service
  * Uses Eureka service discovery to locate driver-service instances
  */
-@FeignClient(name = "driver-service")
+@FeignClient(name = "driver-service", url = "${driver-service.url:}")
 public interface DriverServiceClient {
     
     /**

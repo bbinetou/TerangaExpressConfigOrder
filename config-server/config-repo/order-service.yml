@@ -59,6 +59,9 @@ feign:
       parcel-service:
         connectTimeout: 3000
         readTimeout: 3000
+      user-service:
+        connectTimeout: 3000
+        readTimeout: 3000
       payment-service:
         connectTimeout: 3000
         readTimeout: 3000

@@ -11,7 +11,7 @@ import sn.edu.ept.order_service.dto.PaymentResponse;
  * Feign client for communicating with payment-service
  * Uses Eureka service discovery to locate payment-service instances
  */
-@FeignClient(name = "payment-service")
+@FeignClient(name = "payment-service", url = "${payment-service.url:}")
 public interface PaymentServiceClient {
     
     /**

@@ -4,14 +4,11 @@ import net.jqwik.api.*;
 import net.jqwik.api.constraints.AlphaChars;
 import net.jqwik.api.constraints.IntRange;
 import net.jqwik.api.constraints.StringLength;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.context.ApplicationContext;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.IOException;
@@ -35,15 +32,17 @@ class ConfigurationLoadingPropertiesTest {
     private int port;
 
     @Autowired
-    private TestRestTemplate restTemplate;
+    private ApplicationContext applicationContext;
 
-    private String baseUrl;
-    private Path configRepoPath;
+    private WebTestClient createWebTestClient() {
+        String baseUrl = "http://localhost:" + port;
+        return WebTestClient.bindToServer()
+            .baseUrl(baseUrl)
+            .build();
+    }
 
-    @BeforeEach
-    void setUp() {
-        baseUrl = "http://localhost:" + port;
-        configRepoPath = Paths.get("config-repo");
+    private Path getConfigRepoPath() {
+        return Paths.get("config-repo");
     }
 
     /**
@@ -60,6 +59,9 @@ class ConfigurationLoadingPropertiesTest {
             @ForAll @AlphaChars @StringLength(min = 3, max = 15) String propertyKey,
             @ForAll @StringLength(min = 1, max = 50) String propertyValue) throws IOException {
         
+        WebTestClient webTestClient = createWebTestClient();
+        Path configRepoPath = getConfigRepoPath();
+        
         // Create a valid YAML configuration
         Map<String, Object> config = new HashMap<>();
         config.put(propertyKey, propertyValue);
@@ -71,13 +73,17 @@ class ConfigurationLoadingPropertiesTest {
         
         try {
             // Request configuration from the server
-            String url = baseUrl + "/" + serviceName + "/default";
-            ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
+            Map<String, Object> body = webTestClient.get()
+                .uri("/" + serviceName + "/default")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(Map.class)
+                .returnResult()
+                .getResponseBody();
             
             // Verify the server successfully parsed and returned the configuration
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-            assertThat(response.getBody()).isNotNull();
-            assertThat(response.getBody()).containsKey("propertySources");
+            assertThat(body).isNotNull();
+            assertThat(body).containsKey("propertySources");
         } finally {
             // Cleanup
             Files.deleteIfExists(serviceConfigPath);
@@ -96,16 +102,21 @@ class ConfigurationLoadingPropertiesTest {
     void allServiceConfigurationsShouldIncludeGlobalProperties(
             @ForAll @AlphaChars @StringLength(min = 3, max = 20) String serviceName) {
         
+        WebTestClient webTestClient = createWebTestClient();
+        
         // Request configuration for any service
-        String url = baseUrl + "/" + serviceName + "/default";
-        ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
+        Map<String, Object> body = webTestClient.get()
+            .uri("/" + serviceName + "/default")
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody(Map.class)
+            .returnResult()
+            .getResponseBody();
         
         // Verify response is successful
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
+        assertThat(body).isNotNull();
         
         // Verify propertySources contains application.yml
-        Map<String, Object> body = response.getBody();
         assertThat(body).containsKey("propertySources");
         
         @SuppressWarnings("unchecked")
@@ -137,6 +148,9 @@ class ConfigurationLoadingPropertiesTest {
             @ForAll @AlphaChars @StringLength(min = 3, max = 15) String uniqueKey,
             @ForAll @IntRange(min = 1000, max = 9999) int uniqueValue) throws IOException {
         
+        WebTestClient webTestClient = createWebTestClient();
+        Path configRepoPath = getConfigRepoPath();
+        
         // Create a service-specific configuration with a unique property
         Map<String, Object> config = new HashMap<>();
         config.put(uniqueKey, uniqueValue);
@@ -147,14 +161,16 @@ class ConfigurationLoadingPropertiesTest {
         
         try {
             // Request configuration for the service
-            String url = baseUrl + "/" + serviceName + "/default";
-            ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
+            Map<String, Object> body = webTestClient.get()
+                .uri("/" + serviceName + "/default")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(Map.class)
+                .returnResult()
+                .getResponseBody();
             
             // Verify the service-specific configuration is loaded
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-            assertThat(response.getBody()).isNotNull();
-            
-            Map<String, Object> body = response.getBody();
+            assertThat(body).isNotNull();
             assertThat(body).containsKey("propertySources");
             
             @SuppressWarnings("unchecked")
@@ -187,19 +203,24 @@ class ConfigurationLoadingPropertiesTest {
     void nonExistentServiceShouldReturnOnlyGlobalConfiguration(
             @ForAll @AlphaChars @StringLength(min = 3, max = 20) String nonExistentService) {
         
+        WebTestClient webTestClient = createWebTestClient();
+        Path configRepoPath = getConfigRepoPath();
+        
         // Ensure the service configuration file doesn't exist
         Path serviceConfigPath = configRepoPath.resolve(nonExistentService + ".yml");
         Assume.that(!Files.exists(serviceConfigPath));
         
         // Request configuration for non-existent service
-        String url = baseUrl + "/" + nonExistentService + "/default";
-        ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
+        Map<String, Object> body = webTestClient.get()
+            .uri("/" + nonExistentService + "/default")
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody(Map.class)
+            .returnResult()
+            .getResponseBody();
         
         // Verify response is successful
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        
-        Map<String, Object> body = response.getBody();
+        assertThat(body).isNotNull();
         assertThat(body).containsKey("propertySources");
         
         @SuppressWarnings("unchecked")
@@ -230,6 +251,9 @@ class ConfigurationLoadingPropertiesTest {
             @ForAll @AlphaChars @StringLength(min = 3, max = 15) String sharedKey,
             @ForAll @IntRange(min = 1000, max = 4999) int serviceValue) throws IOException {
         
+        WebTestClient webTestClient = createWebTestClient();
+        Path configRepoPath = getConfigRepoPath();
+        
         // Create service-specific configuration with a property that might exist in global config
         Map<String, Object> serviceConfig = new HashMap<>();
         Map<String, Object> nested = new HashMap<>();
@@ -242,14 +266,16 @@ class ConfigurationLoadingPropertiesTest {
         
         try {
             // Request configuration
-            String url = baseUrl + "/" + serviceName + "/default";
-            ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
+            Map<String, Object> body = webTestClient.get()
+                .uri("/" + serviceName + "/default")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(Map.class)
+                .returnResult()
+                .getResponseBody();
             
             // Verify service-specific configuration takes precedence
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-            assertThat(response.getBody()).isNotNull();
-            
-            Map<String, Object> body = response.getBody();
+            assertThat(body).isNotNull();
             assertThat(body).containsKey("propertySources");
             
             @SuppressWarnings("unchecked")
@@ -296,6 +322,9 @@ class ConfigurationLoadingPropertiesTest {
             @ForAll @AlphaChars @StringLength(min = 3, max = 15) String profileKey,
             @ForAll @IntRange(min = 5000, max = 9999) int profileValue) throws IOException {
         
+        WebTestClient webTestClient = createWebTestClient();
+        Path configRepoPath = getConfigRepoPath();
+        
         // Create profile-specific configuration
         Map<String, Object> profileConfig = new HashMap<>();
         profileConfig.put(profileKey, profileValue);
@@ -306,14 +335,16 @@ class ConfigurationLoadingPropertiesTest {
         
         try {
             // Request configuration with profile
-            String url = baseUrl + "/" + serviceName + "/" + profile;
-            ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
+            Map<String, Object> body = webTestClient.get()
+                .uri("/" + serviceName + "/" + profile)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(Map.class)
+                .returnResult()
+                .getResponseBody();
             
             // Verify profile-specific configuration is loaded
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-            assertThat(response.getBody()).isNotNull();
-            
-            Map<String, Object> body = response.getBody();
+            assertThat(body).isNotNull();
             assertThat(body).containsKey("propertySources");
             
             @SuppressWarnings("unchecked")
@@ -348,6 +379,9 @@ class ConfigurationLoadingPropertiesTest {
             @ForAll @AlphaChars @StringLength(min = 3, max = 20) String serviceName,
             @ForAll @AlphaChars @StringLength(min = 2, max = 10) String profile) throws IOException {
         
+        WebTestClient webTestClient = createWebTestClient();
+        Path configRepoPath = getConfigRepoPath();
+        
         // Create service-specific configuration
         Path serviceConfigPath = configRepoPath.resolve(serviceName + ".yml");
         Map<String, Object> serviceConfig = new HashMap<>();
@@ -363,14 +397,16 @@ class ConfigurationLoadingPropertiesTest {
         
         try {
             // Request configuration with profile
-            String url = baseUrl + "/" + serviceName + "/" + profile;
-            ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
+            Map<String, Object> body = webTestClient.get()
+                .uri("/" + serviceName + "/" + profile)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(Map.class)
+                .returnResult()
+                .getResponseBody();
             
             // Verify correct precedence
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-            assertThat(response.getBody()).isNotNull();
-            
-            Map<String, Object> body = response.getBody();
+            assertThat(body).isNotNull();
             assertThat(body).containsKey("propertySources");
             
             @SuppressWarnings("unchecked")
