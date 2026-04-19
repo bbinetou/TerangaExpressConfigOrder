@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
 public class OrderResponse {
     private Long id;
     private Long clientId;
-    private Long parcelId;
+    private UUID parcelId;
     private Long driverId;
     private OrderStatus status;
     private String transportType;

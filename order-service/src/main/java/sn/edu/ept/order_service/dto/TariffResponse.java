@@ -4,11 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class TariffResponse {
-    private Long parcelId;
+    private UUID parcelId;
     private Double tariff;
     private Double basePrice;
     private Double weightCost;

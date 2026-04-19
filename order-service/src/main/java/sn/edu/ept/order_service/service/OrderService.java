@@ -83,7 +83,7 @@ public class OrderService {
         }
         
         // Étape 2: Vérifier que le colis a le statut CREATED (Exigence 4.1)
-        if (!"CREATED".equals(parcel.getStatus())) {
+        if (!"EN_ATTENTE".equals(parcel.getStatus())) {
             throw new InvalidParcelException(
                 request.getParcelId(), 
                 String.format("Parcel status must be CREATED, but was %s", parcel.getStatus())

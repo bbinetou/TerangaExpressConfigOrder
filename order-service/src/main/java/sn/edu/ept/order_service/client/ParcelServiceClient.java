@@ -7,26 +7,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import sn.edu.ept.order_service.dto.ParcelResponse;
 import sn.edu.ept.order_service.dto.TariffResponse;
 
-/**
- * Feign client for communicating with parcel-service
- * Uses Eureka service discovery to locate parcel-service instances
- */
+import java.util.UUID;
+
 @FeignClient(name = "parcel-service", url = "${parcel-service.url:}")
 public interface ParcelServiceClient {
-    
-    /**
-     * Get parcel details by ID
-     * @param id the parcel ID
-     * @return ParcelResponse containing parcel details
-     */
+
     @GetMapping("/api/parcels/{id}")
-    ParcelResponse getParcel(@PathVariable("id") Long id);
-    
-    /**
-     * Calculate tariff for a parcel
-     * @param id the parcel ID
-     * @return TariffResponse containing calculated tariff
-     */
+    ParcelResponse getParcel(@PathVariable("id") UUID id);
+
     @PostMapping("/api/parcels/{id}/calculate-tariff")
-    TariffResponse calculateTariff(@PathVariable("id") Long id);
+    TariffResponse calculateTariff(@PathVariable("id") UUID id);
 }
